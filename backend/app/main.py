@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from app.core.config import settings
+from app.db.qdrant_client import init_qdrant
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.on_event("startup")
+async def startup_event():
+    """Acciones a ejecutar cuando el servidor inicia."""
+    init_qdrant()
 
 @app.get("/")
 async def root():
