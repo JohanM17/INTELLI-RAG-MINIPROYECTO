@@ -53,3 +53,26 @@ class VectorService:
             collection_name=self.collection_name,
             points=points
         )
+
+    def delete_document(self, document_id: str):
+        """Elimina todos los vectores asociados a un document_id específico en el Payload."""
+        # Se borran todos los puntos donde el Payload tenga este document_id
+        self.qdrant.delete(
+            collection_name=self.collection_name,
+            points_selector=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="document_id",
+                        match=models.MatchValue(value=document_id),
+                    )
+                ]
+            ),
+        )
+
+    def reset_collection(self):
+        """Borra la colección entera y la recrea vacía."""
+        from app.db.qdrant_client import init_qdrant
+        # Borrado destructivo
+        self.qdrant.delete_collection(collection_name=self.collection_name)
+        # Recreamos la colección en blanco
+        init_qdrant()
