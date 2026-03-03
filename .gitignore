@@ -1,0 +1,27 @@
+# Entorno Virtual
+venv/
+env/
+.venv/
+
+# Python (Archivos compilados)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Variables de entorno (IMPORTANTE)
+.env
+backend/.env
+
+# Base de datos local (Qdrant)
+qdrant_storage/
+backend/qdrant_storage/
+
+# IDEs
+.vscode/
+.idea/
+
+# SO
+.DS_Store
+Thumbs.db
