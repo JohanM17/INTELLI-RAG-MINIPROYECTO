@@ -23,12 +23,9 @@ class CohereProvider(BaseLLM):
 
         RESPUESTA:
         """
-        
-        response = self.client.generate(
-            prompt=full_prompt,
-            model='command-r-plus', # Modelo optimizado para RAG
-            max_tokens=500,
+        response = self.client.chat(
+            message=full_prompt,
             temperature=0.3 # Baja temperatura para respuestas más precisas y menos creativas
         )
         
-        return response.generations[0].text.strip()
+        return response.text.strip()

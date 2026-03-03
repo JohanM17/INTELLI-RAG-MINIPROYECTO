@@ -60,12 +60,12 @@ class RAGService:
             input_type="search_query"
         ).embeddings[0]
 
-        # 2. Buscar fragmentos similares en Qdrant
-        search_result = self.vector_service.qdrant.search(
+        # 2. Buscar fragmentos similares en Qdrant (Versión Moderna de la Librería)
+        search_result = self.vector_service.qdrant.query_points(
             collection_name=self.vector_service.collection_name,
-            query_vector=question_embedding,
+            query=question_embedding,
             limit=top_k # Cuántos párrafos traemos (los más relevantes)
-        )
+        ).points
 
         # 3. Extraer el texto de los resultados y construir un gran texto de contexto
         context_chunks = []

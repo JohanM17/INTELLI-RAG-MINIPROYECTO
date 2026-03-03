@@ -12,6 +12,6 @@ class Settings:
     
     # Configuración del sistema RAG
     COLLECTION_NAME: str = "documents"
-    VECTOR_SIZE: int = 4096  # Dimensión para el modelo Cohere embed-english-v3.0
+    VECTOR_SIZE: int = 1024  # Dimensión real para el modelo Cohere embed-english-v3.0
 
 settings = Settings()
