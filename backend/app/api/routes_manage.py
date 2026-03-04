@@ -8,6 +8,16 @@ router = APIRouter(tags=["Manage Documents"])
 def get_vector_service():
     return VectorService()
 
+@router.get("/documents", response_model=list[dict])
+async def get_documents(vector_db: VectorService = Depends(get_vector_service)):
+    """
+    Obtiene todos los documentos guardados en Qdrant.
+    """
+    try:
+        return vector_db.list_documents()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/document/{document_id}", response_model=ActionResponse)
 async def delete_document(document_id: str, vector_db: VectorService = Depends(get_vector_service)):
     """
@@ -23,8 +33,7 @@ async def delete_document(document_id: str, vector_db: VectorService = Depends(g
 @router.delete("/reset", response_model=ActionResponse)
 async def reset_database(vector_db: VectorService = Depends(get_vector_service)):
     """
-    ¡PELIGRO! Vacía completamente la base de datos vectorial
-    y elimina todos los documentos almacenados en Qdrant.
+    Realiza la limpieza total de la base de datos vectorial.
     """
     try:
         vector_db.reset_collection()

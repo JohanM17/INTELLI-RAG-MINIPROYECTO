@@ -27,3 +27,8 @@ class ChatResponse(BaseModel):
 class ActionResponse(BaseModel):
     """Modelo estándar de éxito para borrados o reseteos."""
     message: str
+
+class DocumentInfo(BaseModel):
+    document_id: str
+    filename: str
+    upload_timestamp: str

@@ -10,7 +10,7 @@ class PDFService:
         """
         Lee un archivo PDF subido y extrae todo su contenido de texto.
         """
-        # Leemos el contenido del archivo en memoria para evitar guardar archivos temporales
+        # Carga del contenido binario para procesamiento en memoria
         content = file.file.read()
         pdf_document = fitz.open(stream=content, filetype="pdf")
         

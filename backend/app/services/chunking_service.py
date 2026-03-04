@@ -18,8 +18,7 @@ class ChunkingService:
             return []
             
         chunks = []
-        # Avanzamos por el texto dando "saltos" más pequeños que el tamaño del chunk
-        # para generar el solapamiento de contexto.
+        # Cálculo del paso entre fragmentos considerando el solapamiento
         step = chunk_size - chunk_overlap
         if step <= 0:
             step = chunk_size # Prevenir bucle infinito si el solapamiento es mal configurado

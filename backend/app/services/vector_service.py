@@ -29,50 +29,70 @@ class VectorService:
         points = []
         upload_time = datetime.utcnow().isoformat()
 
-        # Iteramos simultáneamente a través de fragmentos y vectores usando zip()
+        # Genera y configura estructuras PointStruct para Qdrant
         for chunk, embedding in zip(chunks, embeddings):
-            # Qdrant requiere un ID numérico o UUID formato string para cada punto
             point_id = str(uuid.uuid4())
             
-            # Configuramos el "Punto" a la estructura de Qdrant
             point = models.PointStruct(
                 id=point_id,
-                vector=embedding, # Los 4096 números
-                # Payload es la metadata; aquí viven nuestro texto original y datos del archivo
+                vector=embedding,
                 payload={
                     "document_id": document_id,
                     "filename": filename,
-                    "text": chunk, # Esto es lo que la IA leerá luego
+                    "text": chunk,
                     "upload_timestamp": upload_time
                 }
             )
             points.append(point)
 
-        # Enviamos el bulto completo de vectores (upsert crea si no existe o reemplaza si existen ids conflictivos)
+        # Inserción masiva de vectores en la colección
         self.qdrant.upsert(
             collection_name=self.collection_name,
             points=points
         )
 
     def delete_document(self, document_id: str):
-        """Elimina todos los vectores asociados a un document_id específico en el Payload."""
-        # Se borran todos los puntos donde el Payload tenga este document_id
+        """Elimina vectores asociados a un document_id específico."""
         self.qdrant.delete(
             collection_name=self.collection_name,
             points_selector=models.Filter(
                 must=[
                     models.FieldCondition(
                         key="document_id",
-                        match=models.MatchValue(value=document_id),
+                        match=models.MatchValue(value=document_id)
                     )
                 ]
-            ),
+            )
         )
 
+    def list_documents(self) -> list[dict]:
+        """Extrae la lista de documentos únicos almacenados."""
+        # Recupera registros para procesar metadata de documentos
+        records, _ = self.qdrant.scroll(
+            collection_name=self.collection_name, 
+            limit=1000,
+            with_payload=True, 
+            with_vectors=False
+        )
+        
+        # Agrupación por document_id para evitar duplicados por chunks
+        unique_docs = {}
+        for record in records:
+            doc_id = record.payload.get("document_id")
+            if doc_id and doc_id not in unique_docs:
+                unique_docs[doc_id] = {
+                    "document_id": doc_id,
+                    "filename": record.payload.get("filename", "Documento Sin Nombre"),
+                    "upload_timestamp": record.payload.get("upload_timestamp", "")
+                }
+                
+        return list(unique_docs.values())
+
     def reset_collection(self):
-        """Borra la colección entera y la recrea vacía."""
-        from app.db.qdrant_client import init_qdrant
-        # Borrado destructivo
-        self.qdrant.delete_collection(collection_name=self.collection_name)
-        # Recreamos la colección en blanco
-        init_qdrant()
+        """
+        Elimina todos los vectores de la colección manteniendo la estructura.
+        """
+        self.qdrant.delete(
+            collection_name=self.collection_name,
+            points_selector=models.Filter() # Filtro vacío para eliminación total
+        )

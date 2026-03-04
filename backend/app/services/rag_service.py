@@ -49,35 +49,29 @@ class RAGService:
 
     def ask_question(self, question: str, top_k: int = 3) -> str:
         """
-        Flujo de pregunta: 
-        Pregunta -> Embedding -> Búsqueda Vectorial -> Construcción Contexto -> LLM
+        Ejecuta el flujo de consulta RAG.
         """
-        # 1. Convertir la pregunta en un Vector para poder buscarla
-        # Cohere requiere input_type="search_query" para preguntas
+        # Vectorización de la consulta del usuario
         question_embedding = self.embedding_service.co_client.embed(
             texts=[question],
             model=self.embedding_service.model_name,
             input_type="search_query"
         ).embeddings[0]
 
-        # 2. Buscar fragmentos similares en Qdrant (Versión Moderna de la Librería)
+        # Búsqueda de fragmentos por similitud vectorial
         search_result = self.vector_service.qdrant.query_points(
             collection_name=self.vector_service.collection_name,
             query=question_embedding,
-            limit=top_k # Cuántos párrafos traemos (los más relevantes)
+            limit=top_k
         ).points
 
-        # 3. Extraer el texto de los resultados y construir un gran texto de contexto
+        # Reconstrucción del contexto basado en resultados relevantes
         context_chunks = []
         for hit in search_result:
-            # Descartamos resultados con puntuación muy baja (poco relevantes)
             if hit.score > 0.2: 
                 context_chunks.append(hit.payload["text"])
                 
         context = "\n\n---\n\n".join(context_chunks)
 
-        # 4. Pasar todo al LLM (El LLM no tiene memoria, solo recibe esta pregunta + el contexto)
-        if not context:
-            return "No encontré información relevante en los documentos cargados para responder tu pregunta."
-            
+        # Generación de respuesta final mediante el LLM
         return self.llm.generate_response(prompt=question, context=context)
