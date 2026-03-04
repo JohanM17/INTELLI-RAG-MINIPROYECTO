@@ -5,10 +5,8 @@ class EmbeddingService:
     """Clase encargada de interactuar con el modelo de embeddings de Cohere."""
     
     def __init__(self):
-        # Iniciamos el cliente de Cohere con la clave desde .env
         self.co_client = cohere.Client(api_key=settings.COHERE_API_KEY)
-        # El modelo específico para embeddings es distinto al modelo de chat
-        # Cohere recomienda explícitamente v3.0 para búsquedas vectoriales
+        # Modelo v3.0 optimizado para recuperación de información (RAG)
         self.model_name = "embed-english-v3.0"
 
     def create_embeddings(self, texts: list[str]) -> list[list[float]]:

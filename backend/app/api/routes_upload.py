@@ -5,11 +5,11 @@ from app.models.schemas import UploadResponse
 
 router = APIRouter(prefix="/upload", tags=["Upload Documents"])
 
-# Dependency Injection para instanciar el servicio con Cohere
+# Inyección de dependencias para el servicio RAG
 def get_rag_service():
     return RAGService(llm_provider=CohereProvider())
 
-@router.post("/", response_model=UploadResponse)
+@router.post("", response_model=UploadResponse)
 async def upload_pdf(file: UploadFile = File(...), rag: RAGService = Depends(get_rag_service)):
     """
     Sube un documento PDF. El sistema lo leerá, dividirá, 
@@ -19,7 +19,7 @@ async def upload_pdf(file: UploadFile = File(...), rag: RAGService = Depends(get
         raise HTTPException(status_code=400, detail="El archivo debe ser un PDF válido.")
         
     try:
-        # Aquí el Orquestador hace todo el trabajo pesado
+        # Inicio del proceso de ingesta de documento
         result = rag.process_and_store_pdf(file)
         return UploadResponse(
             message="Documento procesado e indexado con éxito.",
@@ -28,5 +28,4 @@ async def upload_pdf(file: UploadFile = File(...), rag: RAGService = Depends(get
             chunks_created=result["chunks_created"]
         )
     except Exception as e:
-        # Capturamos cualquier error en el flujo
         raise HTTPException(status_code=500, detail=str(e))

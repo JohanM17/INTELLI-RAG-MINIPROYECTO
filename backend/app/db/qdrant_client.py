@@ -2,8 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from app.core.config import settings
 
-# Patrón Singleton: Mantenemos una única instancia viva en memoria
-# para evitar que Qdrant bloquee la carpeta al intentar abrirla múltiples veces.
+# Instancia global para el patrón Singleton
 _qdrant_client = None
 
 def get_qdrant_client() -> QdrantClient:
